@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1a3a5c">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Stronghold">
+<title>Stronghold Structures — Site Portal</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy: #1a3a5c;
+    --navy-dark: #112a42;
+    --navy-light: #2a5080;
+    --green: #0F6E56;
+    --green-light: #E1F5EE;
+    --red: #A32D2D;
+    --red-light: #FCEBEB;
+    --amber: #854F0B;
+    --amber-light: #FAEEDA;
+    --gray-50: #f8f9fa;
+    --gray-100: #f1f3f4;
+    --gray-200: #e8eaed;
+    --gray-300: #dadce0;
+    --gray-400: #bdc1c6;
+    --gray-600: #80868b;
+    --gray-800: #3c4043;
+    --gray-900: #202124;
+    --white: #ffffff;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --font: 'DM Sans', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
+  }
+
+  html, body {
+    font-family: var(--font);
+    background: var(--gray-100);
+    color: var(--gray-900);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .app {
+    max-width: 420px;
+    margin: 0 auto;
+    min-height: 100vh;
+    background: var(--white);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+
+  /* SCREENS */
+  .screen { display: none; flex-direction: column; min-height: 100vh; animation: fadeIn 0.2s ease; }
+  .screen.active { display: flex; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* HEADER */
+  .header {
+    background: var(--navy);
+    padding: 48px 20px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    bottom: -20px; left: -20px;
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.03);
+  }
+  .header-back {
+    position: absolute;
+    top: 48px; left: 20px;
+    background: rgba(255,255,255,0.1);
+    border: none;
+    color: white;
+    font-size: 13px;
+    font-family: var(--font);
+    padding: 6px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .header h1 { font-size: 20px; font-weight: 600; color: white; margin-bottom: 3px; position: relative; z-index: 1; }
+  .header p { font-size: 12px; color: rgba(255,255,255,0.6); position: relative; z-index: 1; }
+
+  /* OFFLINE BAR */
+  .offline-bar {
+    background: var(--amber-light);
+    padding: 8px 16px;
+    font-size: 11px;
+    color: var(--amber);
+    text-align: center;
+    display: none;
+  }
+  .offline-bar.show { display: block; }
+
+  /* BODY */
+  .body { padding: 16px; flex: 1; overflow-y: auto; }
+
+  /* HOME SCREEN */
+  .greeting-card {
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .greeting-name { font-size: 15px; font-weight: 500; color: var(--gray-900); margin-bottom: 3px; }
+  .greeting-meta { font-size: 12px; color: var(--gray-600); }
+
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .stat-card {
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-md);
+    padding: 14px 12px;
+    text-align: center;
+  }
+  .stat-num { font-size: 24px; font-weight: 600; color: var(--navy); margin-bottom: 3px; }
+  .stat-num.red { color: var(--red); }
+  .stat-label { font-size: 11px; color: var(--gray-600); }
+
+  .primary-btn {
+    width: 100%;
+    background: var(--navy);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 14px;
+    font-size: 15px;
+    font-weight: 500;
+    font-family: var(--font);
+    cursor: pointer;
+    margin-bottom: 10px;
+    transition: background 0.15s, transform 0.1s;
+  }
+  .primary-btn:active { transform: scale(0.98); background: var(--navy-dark); }
+
+  .secondary-btn {
+    width: 100%;
+    background: transparent;
+    color: var(--navy);
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-md);
+    padding: 13px;
+    font-size: 14px;
+    font-weight: 500;
+    font-family: var(--font);
+    cursor: pointer;
+    margin-bottom: 10px;
+    transition: background 0.15s;
+  }
+  .secondary-btn:active { background: var(--gray-50); }
+
+  .recent-list { margin-top: 8px; }
+  .recent-title { font-size: 12px; font-weight: 500; color: var(--gray-600); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
+  .recent-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--gray-100);
+  }
+  .recent-item:last-child { border-bottom: none; }
+  .recent-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+  .recent-dot.issue { background: var(--red); }
+  .recent-info { flex: 1; }
+  .recent-project { font-size: 13px; font-weight: 500; color: var(--gray-900); }
+  .recent-date { font-size: 11px; color: var(--gray-600); margin-top: 1px; }
+  .recent-badge {
+    font-size: 10px; padding: 3px 8px; border-radius: 10px; font-weight: 500;
+  }
+  .badge-ok { background: var(--green-light); color: var(--green); }
+  .badge-issue { background: var(--red-light); color: var(--red); }
+
+  /* FORM SCREEN */
+  .form-section { margin-bottom: 20px; }
+  .section-title { font-size: 12px; font-weight: 500; color: var(--gray-600); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--gray-100); }
+
+  .field { margin-bottom: 14px; }
+  .field-label { font-size: 13px; font-weight: 500; color: var(--gray-800); margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+  .req { font-size: 10px; padding: 2px 6px; border-radius: 6px; background: var(--red-light); color: var(--red); font-weight: 500; }
+  .opt { font-size: 10px; padding: 2px 6px; border-radius: 6px; background: var(--green-light); color: var(--green); font-weight: 500; }
+
+  .field input, .field select, .field textarea {
+    width: 100%;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    font-size: 14px;
+    font-family: var(--font);
+    color: var(--gray-900);
+    background: var(--white);
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    -webkit-appearance: none;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    border-color: var(--navy);
+    box-shadow: 0 0 0 3px rgba(26,58,92,0.1);
+  }
+  .field textarea { height: 80px; resize: none; line-height: 1.5; }
+  .field input[type="number"] { font-family: var(--font-mono); }
+
+  .photo-upload {
+    width: 100%;
+    border: 1.5px dashed var(--gray-300);
+    border-radius: var(--radius-sm);
+    padding: 20px;
+    text-align: center;
+    background: var(--gray-50);
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .photo-upload:hover { border-color: var(--navy); background: #f0f4f8; }
+  .photo-upload-icon { font-size: 24px; margin-bottom: 6px; }
+  .photo-upload-text { font-size: 13px; color: var(--gray-600); }
+  .photo-upload-sub { font-size: 11px; color: var(--gray-400); margin-top: 3px; }
+  .photo-preview { display: none; }
+  .photo-preview img { width: 100%; border-radius: var(--radius-sm); max-height: 200px; object-fit: cover; }
+  .photo-remove { font-size: 12px; color: var(--red); cursor: pointer; text-align: center; margin-top: 6px; }
+
+  input[type="file"] { display: none; }
+
+  .char-count { font-size: 11px; color: var(--gray-400); text-align: right; margin-top: 3px; }
+
+  /* SUCCESS SCREEN */
+  .success-body { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; padding: 32px 24px; text-align: center; }
+  .success-ring {
+    width: 80px; height: 80px; border-radius: 50%;
+    background: var(--green-light);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 20px;
+    animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  @keyframes popIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .success-check { font-size: 36px; }
+  .success-title { font-size: 22px; font-weight: 600; color: var(--gray-900); margin-bottom: 8px; }
+  .success-sub { font-size: 14px; color: var(--gray-600); line-height: 1.6; margin-bottom: 12px; }
+  .success-ref { font-size: 12px; color: var(--gray-400); font-family: var(--font-mono); margin-bottom: 32px; }
+  .success-actions { width: 100%; }
+
+  /* HISTORY SCREEN */
+  .history-item {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-md);
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+  .history-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .history-project { font-size: 14px; font-weight: 500; color: var(--gray-900); }
+  .history-date { font-size: 11px; color: var(--gray-600); }
+  .history-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+  .history-tag { font-size: 11px; padding: 3px 8px; background: var(--gray-100); border-radius: 6px; color: var(--gray-600); }
+  .history-tag.issue { background: var(--red-light); color: var(--red); }
+
+  /* BOTTOM NAV */
+  .bottom-nav {
+    background: var(--white);
+    border-top: 1px solid var(--gray-200);
+    display: flex;
+    padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+    position: sticky;
+    bottom: 0;
+  }
+  .nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 6px;
+    cursor: pointer;
+    border: none;
+    background: none;
+    font-family: var(--font);
+  }
+  .nav-icon { font-size: 20px; }
+  .nav-label { font-size: 10px; color: var(--gray-600); }
+  .nav-item.active .nav-label { color: var(--navy); font-weight: 500; }
+  .nav-item.active .nav-icon { filter: none; }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--gray-900);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 13px;
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 100;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* SYNC INDICATOR */
+  .sync-badge {
+    position: absolute;
+    top: -2px; right: -2px;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--red);
+    border: 2px solid var(--white);
+    display: none;
+  }
+  .sync-badge.show { display: block; }
+
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--gray-600); }
+  .empty-icon { font-size: 40px; margin-bottom: 12px; }
+  .empty-text { font-size: 14px; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HOME SCREEN -->
+  <div class="screen active" id="screen-home">
+    <div class="header">
+      <h1>Stronghold Structures</h1>
+      <p id="home-date">Loading...</p>
+    </div>
+    <div class="offline-bar" id="offline-bar">No internet connection — reports will sync when online</div>
+    <div class="body">
+      <div class="greeting-card">
+        <div class="greeting-name" id="greeting-name">Good morning</div>
+        <div class="greeting-meta" id="greeting-project">Select your project below</div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-num" id="stat-week">0</div>
+          <div class="stat-label">Reports this week</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num red" id="stat-issues">0</div>
+          <div class="stat-label">Open issues</div>
+        </div>
+      </div>
+
+      <button class="primary-btn" onclick="showScreen('form')">Submit daily site report</button>
+      <button class="secondary-btn" onclick="showScreen('history')">View past reports</button>
+
+      <div class="recent-list" id="recent-list">
+        <div class="recent-title">Recent submissions</div>
+        <div id="recent-items"></div>
+      </div>
+    </div>
+    <div class="bottom-nav">
+      <button class="nav-item active" onclick="showScreen('home')">
+        <span class="nav-icon">🏠</span>
+        <span class="nav-label">Home</span>
+      </button>
+      <button class="nav-item" onclick="showScreen('form')">
+        <span class="nav-icon">📋</span>
+        <span class="nav-label">Report</span>
+      </button>
+      <button class="nav-item" onclick="showScreen('history')">
+        <span class="nav-icon">📁</span>
+        <span class="nav-label">History</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- FORM SCREEN -->
+  <div class="screen" id="screen-form">
+    <div class="header">
+      <button class="header-back" onclick="showScreen('home')">← Back</button>
+      <h1>Daily site report</h1>
+      <p id="form-date">Loading...</p>
+    </div>
+    <div class="offline-bar" id="offline-bar-form">Offline — report will sync when connected</div>
+    <div class="body">
+
+      <div class="form-section">
+        <div class="section-title">Supervisor details</div>
+        <div class="field">
+          <div class="field-label">Supervisor name <span class="req">Required</span></div>
+          <select id="f-supervisor">
+            <option value="">Select supervisor</option>
+            <option>Benny</option>
+            <option>Sajo</option>
+            <option>Augustine</option>
+            <option>Kanchan</option>
+          </select>
+        </div>
+        <div class="field">
+          <div class="field-label">Project <span class="req">Required</span></div>
+          <select id="f-project">
+            <option value="">Select project</option>
+            <option>Dominic</option>
+            <option>Project 1</option>
+            <option>Project 2</option>
+            <option>Project 3</option>
+          </select>
+        </div>
+        <div class="field">
+          <div class="field-label">Report date <span class="req">Required</span></div>
+          <input type="date" id="f-date">
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="section-title">Site activity</div>
+        <div class="field">
+          <div class="field-label">Workers on site <span class="req">Required</span></div>
+          <input type="number" id="f-workers" placeholder="Enter number of workers" min="0" max="999">
+        </div>
+        <div class="field">
+          <div class="field-label">Weather conditions <span class="req">Required</span></div>
+          <select id="f-weather">
+            <option value="">Select weather</option>
+            <option>Clear</option>
+            <option>Cloudy</option>
+            <option>Light rain</option>
+            <option>Heavy rain</option>
+            <option>Storm</option>
+            <option>Hot</option>
+          </select>
+        </div>
+        <div class="field">
+          <div class="field-label">Work completed today <span class="req">Required</span></div>
+          <textarea id="f-work" placeholder="Describe the work completed today..." oninput="updateCount(this, 'work-count', 500)"></textarea>
+          <div class="char-count"><span id="work-count">0</span>/500</div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="section-title">Issues & materials</div>
+        <div class="field">
+          <div class="field-label">Issues or delays <span class="opt">Optional</span></div>
+          <textarea id="f-issues" placeholder="Leave blank if no issues today..." oninput="updateCount(this, 'issues-count', 500)"></textarea>
+          <div class="char-count"><span id="issues-count">0</span>/500</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Materials received <span class="opt">Optional</span></div>
+          <select id="f-materials">
+            <option value="">Select</option>
+            <option>Yes — all materials received</option>
+            <option>Yes — partial delivery</option>
+            <option>No — pending delivery</option>
+            <option>Not applicable</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="section-title">Site photo</div>
+        <div class="field">
+          <div class="field-label">Photo <span class="opt">Optional</span></div>
+          <div class="photo-upload" onclick="document.getElementById('photo-input').click()">
+            <div class="photo-upload-icon">📷</div>
+            <div class="photo-upload-text">Tap to take photo or upload</div>
+            <div class="photo-upload-sub">JPG, PNG up to 10MB</div>
+          </div>
+          <div class="photo-preview" id="photo-preview">
+            <img id="photo-img" src="" alt="Site photo">
+            <div class="photo-remove" onclick="removePhoto()">Remove photo</div>
+          </div>
+          <input type="file" id="photo-input" accept="image/*" capture="environment" onchange="handlePhoto(this)">
+        </div>
+      </div>
+
+      <button class="primary-btn" onclick="submitReport()" id="submit-btn">Submit report</button>
+      <div style="height: 20px;"></div>
+    </div>
+    <div class="bottom-nav">
+      <button class="nav-item" onclick="showScreen('home')">
+        <span class="nav-icon">🏠</span>
+        <span class="nav-label">Home</span>
+      </button>
+      <button class="nav-item active" onclick="showScreen('form')">
+        <span class="nav-icon">📋</span>
+        <span class="nav-label">Report</span>
+      </button>
+      <button class="nav-item" onclick="showScreen('history')">
+        <span class="nav-icon">📁</span>
+        <span class="nav-label">History</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- SUCCESS SCREEN -->
+  <div class="screen" id="screen-success">
+    <div class="header">
+      <h1>Report submitted</h1>
+      <p>Stronghold Structures</p>
+    </div>
+    <div class="success-body">
+      <div class="success-ring">
+        <span class="success-check">✓</span>
+      </div>
+      <div class="success-title">Report sent!</div>
+      <div class="success-sub">Your daily site report has been submitted and PMO has been notified. You will be contacted if any action is required.</div>
+      <div class="success-ref" id="success-ref">REF: Loading...</div>
+      <div class="success-actions">
+        <button class="primary-btn" onclick="resetForm(); showScreen('form')">Submit another report</button>
+        <button class="secondary-btn" onclick="showScreen('home')">Back to home</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HISTORY SCREEN -->
+  <div class="screen" id="screen-history">
+    <div class="header">
+      <h1>Report history</h1>
+      <p>Your submitted reports</p>
+    </div>
+    <div class="body">
+      <div id="history-list"></div>
+    </div>
+    <div class="bottom-nav">
+      <button class="nav-item" onclick="showScreen('home')">
+        <span class="nav-icon">🏠</span>
+        <span class="nav-label">Home</span>
+      </button>
+      <button class="nav-item" onclick="showScreen('form')">
+        <span class="nav-icon">📋</span>
+        <span class="nav-label">Report</span>
+      </button>
+      <button class="nav-item active" onclick="showScreen('history')">
+        <span class="nav-icon">📁</span>
+        <span class="nav-label">History</span>
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const POWER_AUTOMATE_URL = 'YOUR_POWER_AUTOMATE_WEBHOOK_URL';
+
+let reports = JSON.parse(localStorage.getItem('ss_reports') || '[]');
+let pendingSync = JSON.parse(localStorage.getItem('ss_pending') || '[]');
+
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  if (name === 'home') updateHome();
+  if (name === 'history') updateHistory();
+}
+
+function updateHome() {
+  const now = new Date();
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('home-date').textContent = days[now.getDay()] + ', ' + now.getDate() + ' ' + months[now.getMonth()] + ' ' + now.getFullYear();
+  document.getElementById('form-date').textContent = now.getDate() + ' ' + months[now.getMonth()] + ' ' + now.getFullYear();
+
+  const hour = now.getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  document.getElementById('greeting-name').textContent = greeting;
+  document.getElementById('greeting-project').textContent = 'Stronghold Structures — Site Portal';
+
+  const weekStart = new Date(now);
+  weekStart.setDate(now.getDate() - now.getDay());
+  weekStart.setHours(0,0,0,0);
+  const weekReports = reports.filter(r => new Date(r.timestamp) >= weekStart);
+  document.getElementById('stat-week').textContent = weekReports.length;
+
+  const issueReports = reports.filter(r => r.issues && r.issues.trim() !== '');
+  document.getElementById('stat-issues').textContent = issueReports.length;
+
+  const recent = reports.slice(-5).reverse();
+  const container = document.getElementById('recent-items');
+  if (recent.length === 0) {
+    container.innerHTML = '<div style="font-size:13px;color:var(--gray-600);text-align:center;padding:16px 0;">No reports submitted yet</div>';
+    return;
+  }
+  container.innerHTML = recent.map(r => `
+    <div class="recent-item">
+      <div class="recent-dot ${r.issues ? 'issue' : ''}"></div>
+      <div class="recent-info">
+        <div class="recent-project">${r.project} — ${r.supervisor}</div>
+        <div class="recent-date">${new Date(r.timestamp).toLocaleDateString('en-IN', {day:'numeric',month:'short',year:'numeric'})}</div>
+      </div>
+      <span class="recent-badge ${r.issues ? 'badge-issue' : 'badge-ok'}">${r.issues ? 'Issue' : 'Clear'}</span>
+    </div>
+  `).join('');
+}
+
+function updateHistory() {
+  const container = document.getElementById('history-list');
+  if (reports.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">No reports submitted yet</div></div>';
+    return;
+  }
+  const sorted = [...reports].reverse();
+  container.innerHTML = sorted.map(r => `
+    <div class="history-item">
+      <div class="history-header">
+        <div class="history-project">${r.project}</div>
+        <div class="history-date">${new Date(r.timestamp).toLocaleDateString('en-IN', {day:'numeric',month:'short',year:'numeric'})}</div>
+      </div>
+      <div style="font-size:13px;color:var(--gray-800);margin-bottom:6px;">${r.supervisor} · ${r.workers} workers · ${r.weather}</div>
+      <div style="font-size:12px;color:var(--gray-600);margin-bottom:8px;">${r.work.substring(0,100)}${r.work.length > 100 ? '...' : ''}</div>
+      <div class="history-row">
+        ${r.issues ? `<span class="history-tag issue">Issue reported</span>` : '<span class="history-tag">No issues</span>'}
+        ${r.materials ? `<span class="history-tag">${r.materials}</span>` : ''}
+        ${r.synced ? '<span class="history-tag">Synced</span>' : '<span class="history-tag issue">Pending sync</span>'}
+      </div>
+    </div>
+  `).join('');
+}
+
+function updateCount(el, countId, max) {
+  const len = el.value.length;
+  document.getElementById(countId).textContent = len;
+  if (len > max) el.value = el.value.substring(0, max);
+}
+
+function handlePhoto(input) {
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      document.getElementById('photo-img').src = e.target.result;
+      document.querySelector('.photo-upload').style.display = 'none';
+      document.getElementById('photo-preview').style.display = 'block';
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+function removePhoto() {
+  document.getElementById('photo-input').value = '';
+  document.getElementById('photo-img').src = '';
+  document.querySelector('.photo-upload').style.display = 'block';
+  document.getElementById('photo-preview').style.display = 'none';
+}
+
+function validateForm() {
+  const fields = [
+    { id: 'f-supervisor', label: 'Supervisor name' },
+    { id: 'f-project', label: 'Project' },
+    { id: 'f-date', label: 'Report date' },
+    { id: 'f-workers', label: 'Workers on site' },
+    { id: 'f-weather', label: 'Weather conditions' },
+    { id: 'f-work', label: 'Work completed today' }
+  ];
+  for (const f of fields) {
+    const el = document.getElementById(f.id);
+    if (!el.value || el.value.trim() === '') {
+      showToast(f.label + ' is required');
+      el.focus();
+      el.style.borderColor = 'var(--red)';
+      setTimeout(() => el.style.borderColor = '', 2000);
+      return false;
+    }
+  }
+  return true;
+}
+
+async function submitReport() {
+  if (!validateForm()) return;
+
+  const btn = document.getElementById('submit-btn');
+  btn.textContent = 'Submitting...';
+  btn.disabled = true;
+
+  const report = {
+    id: 'SS-' + Date.now(),
+    timestamp: new Date().toISOString(),
+    supervisor: document.getElementById('f-supervisor').value,
+    project: document.getElementById('f-project').value,
+    date: document.getElementById('f-date').value,
+    workers: document.getElementById('f-workers').value,
+    weather: document.getElementById('f-weather').value,
+    work: document.getElementById('f-work').value,
+    issues: document.getElementById('f-issues').value,
+    materials: document.getElementById('f-materials').value,
+    synced: false
+  };
+
+  reports.push(report);
+  localStorage.setItem('ss_reports', JSON.stringify(reports));
+
+  document.getElementById('success-ref').textContent = 'REF: ' + report.id;
+
+  if (navigator.onLine && POWER_AUTOMATE_URL !== 'YOUR_POWER_AUTOMATE_WEBHOOK_URL') {
+    try {
+      await fetch(POWER_AUTOMATE_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(report)
+      });
+      report.synced = true;
+      localStorage.setItem('ss_reports', JSON.stringify(reports));
+    } catch (e) {
+      pendingSync.push(report.id);
+      localStorage.setItem('ss_pending', JSON.stringify(pendingSync));
+    }
+  } else {
+    pendingSync.push(report.id);
+    localStorage.setItem('ss_pending', JSON.stringify(pendingSync));
+  }
+
+  btn.textContent = 'Submit report';
+  btn.disabled = false;
+  showScreen('success');
+}
+
+async function syncPending() {
+  if (!navigator.onLine || pendingSync.length === 0) return;
+  if (POWER_AUTOMATE_URL === 'YOUR_POWER_AUTOMATE_WEBHOOK_URL') return;
+
+  for (const id of [...pendingSync]) {
+    const report = reports.find(r => r.id === id);
+    if (!report) continue;
+    try {
+      await fetch(POWER_AUTOMATE_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(report)
+      });
+      report.synced = true;
+      pendingSync = pendingSync.filter(p => p !== id);
+    } catch (e) {}
+  }
+  localStorage.setItem('ss_reports', JSON.stringify(reports));
+  localStorage.setItem('ss_pending', JSON.stringify(pendingSync));
+  if (pendingSync.length === 0) showToast('All reports synced');
+}
+
+function resetForm() {
+  document.getElementById('f-supervisor').value = '';
+  document.getElementById('f-project').value = '';
+  document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('f-workers').value = '';
+  document.getElementById('f-weather').value = '';
+  document.getElementById('f-work').value = '';
+  document.getElementById('f-issues').value = '';
+  document.getElementById('f-materials').value = '';
+  document.getElementById('work-count').textContent = '0';
+  document.getElementById('issues-count').textContent = '0';
+  removePhoto();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function checkOnline() {
+  const bars = document.querySelectorAll('.offline-bar');
+  bars.forEach(b => b.classList.toggle('show', !navigator.onLine));
+  if (navigator.onLine) syncPending();
+}
+
+window.addEventListener('online', checkOnline);
+window.addEventListener('offline', checkOnline);
+
+document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+checkOnline();
+updateHome();
+</script>
+</body>
+</html>
