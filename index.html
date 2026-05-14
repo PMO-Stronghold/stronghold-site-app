@@ -401,21 +401,13 @@
         <div class="field">
           <div class="field-label">Supervisor name <span class="req">Required</span></div>
           <select id="f-supervisor">
-            <option value="">Select supervisor</option>
-            <option>Benny</option>
-            <option>Sajo</option>
-            <option>Augustine</option>
-            <option>Kanchan</option>
+            <option value="">Loading supervisors...</option>
           </select>
         </div>
         <div class="field">
           <div class="field-label">Project <span class="req">Required</span></div>
           <select id="f-project">
-            <option value="">Select project</option>
-            <option>Dominic</option>
-            <option>Project 1</option>
-            <option>Project 2</option>
-            <option>Project 3</option>
+            <option value="">Loading projects...</option>
           </select>
         </div>
         <div class="field">
@@ -555,6 +547,51 @@
 
 <script>
 const POWER_AUTOMATE_URL = 'YOUR_POWER_AUTOMATE_WEBHOOK_URL';
+const DATA_URL = 'https://pmo-stronghold.github.io/stronghold-site-app/projects.json';
+
+async function loadDropdowns() {
+  try {
+    const res = await fetch(DATA_URL + '?v=' + Date.now());
+    const data = await res.json();
+    const supervisorSelect = document.getElementById('f-supervisor');
+    supervisorSelect.innerHTML = '<option value="">Select supervisor</option>';
+    data.supervisors.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s; opt.textContent = s;
+      supervisorSelect.appendChild(opt);
+    });
+    const projectSelect = document.getElementById('f-project');
+    projectSelect.innerHTML = '<option value="">Select project</option>';
+    data.projects.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p; opt.textContent = p;
+      projectSelect.appendChild(opt);
+    });
+    localStorage.setItem('ss_dropdown_cache', JSON.stringify(data));
+  } catch (e) {
+    const cached = localStorage.getItem('ss_dropdown_cache');
+    if (cached) {
+      const data = JSON.parse(cached);
+      const supervisorSelect = document.getElementById('f-supervisor');
+      supervisorSelect.innerHTML = '<option value="">Select supervisor</option>';
+      data.supervisors.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s; opt.textContent = s;
+        supervisorSelect.appendChild(opt);
+      });
+      const projectSelect = document.getElementById('f-project');
+      projectSelect.innerHTML = '<option value="">Select project</option>';
+      data.projects.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p; opt.textContent = p;
+        projectSelect.appendChild(opt);
+      });
+    } else {
+      document.getElementById('f-supervisor').innerHTML = '<option value="">Unable to load — check connection</option>';
+      document.getElementById('f-project').innerHTML = '<option value="">Unable to load — check connection</option>';
+    }
+  }
+}
 
 let reports = JSON.parse(localStorage.getItem('ss_reports') || '[]');
 let pendingSync = JSON.parse(localStorage.getItem('ss_pending') || '[]');
@@ -780,6 +817,7 @@ window.addEventListener('offline', checkOnline);
 document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
 checkOnline();
 updateHome();
+loadDropdowns();
 </script>
 </body>
 </html>
